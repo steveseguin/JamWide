@@ -542,9 +542,9 @@ export function showPreConnectionState(): void {
 
 export function showConnectionLost(): void {
   const main = el('main-area');
-  // If iframe is already loaded, keep it visible (VDO.Ninja continues working
-  // even if plugin WS drops). Only update the footer.
-  if (main.querySelector('iframe')) {
+  // Keep video on a transient WS drop, but explicit Video off must unload
+  // the publishing iframe and its roster controls.
+  if (!deactivated && main.querySelector('iframe')) {
     return;
   }
   clearChildren(main);

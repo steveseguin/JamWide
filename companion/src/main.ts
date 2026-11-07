@@ -65,6 +65,8 @@ showPreConnectionState();
 // -- Popout Window Management Functions --
 
 function openPopout(streamId: string, username: string): void {
+  if (!configReceived) return;
+
   // D-05: Focus existing window instead of opening duplicate
   const existing = popoutWindows.get(streamId);
   if (existing && !existing.closed) {
@@ -172,6 +174,12 @@ function updatePillIndicators(): void {
 
 // D-13: Deactivate handler -- closes all popout windows and clears tracking state
 function handleDeactivate(): void {
+  // Explicit Video off ends the media session, unlike a transient WS drop.
+  // Forget its config so settings changes and stale controls cannot reopen it.
+  configReceived = false;
+  currentRoom = '';
+  currentPush = '';
+  lastRosterUsers = [];
   for (const [, win] of popoutWindows.entries()) {
     if (!win.closed) win.close();
   }
@@ -182,6 +190,9 @@ function handleDeactivate(): void {
   // button — the plugin's WS server is gone after deactivate() and the
   // only way back is to re-click Video in JamWide.
   markDeactivated();
+  updateHeaderBadge(false);
+  updateFooterStatus(false);
+  hideSyncIndicator();
   showConnectionLost();
 }
 
